@@ -18,6 +18,7 @@ from flask import Flask, render_template, session, request, json, redirect, url_
 from flask_cors import CORS
 from trape import Trape
 import urllib
+from urllib.request import Request, urlopen
 from core.db import Database
 
 # Main parts, to generate relationships among others
@@ -56,6 +57,8 @@ def login():
     else:
       return json.dumps({'status':'NOPE', 'path' : '/'})
 
+
+
 @app.route("/get_data", methods=["POST"])
 def home_get_dat():
     
@@ -89,12 +92,17 @@ def home_get_preview():
     h = db.sentences_stats('get_hostsalive', t)
     return json.dumps({'status' : 'OK', 'vId' : vId, 'd' : d, 'n' : n, 'h' : h})
 
+
+class AppURLopener(urllib.request.FancyURLopener):
+    version = "Mozilla/5.0"
+
 @app.route("/get_title", methods=["POST"])
 def home_get_title():
-    opener = urllib.request.build_opener()
+    opener = opener = AppURLopener()
     html = opener.open(trape.url_to_clone).read()
     html = html[html.find(b'<title>') + 7 : html.find(b'</title>')]
-    return json.dumps({'status' : 'OK', 'title' : html})
+    print(html)
+    return json.dumps({'status' : 'OK', 'title' : html.decode('UTF-8')})
 
 @app.route("/get_requests", methods=["POST"])
 def home_get_requests():
